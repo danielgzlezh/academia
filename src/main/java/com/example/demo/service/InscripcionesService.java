@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.InscripcionDto;
+import com.example.demo.dto.InscripcionListDto;
 import com.example.demo.entitys.Alumno;
 import com.example.demo.entitys.Curso;
 import com.example.demo.entitys.EstadoInscripcion;
@@ -24,147 +25,162 @@ import com.example.demo.repository.InscripcionRepository;
 @Service
 public class InscripcionesService {
 
-	private static final Logger log = LoggerFactory.getLogger(InscripcionesService.class);
+	private static final Logger logger = LoggerFactory.getLogger(InscripcionesService.class);
 
-	@Autowired
-	private InscripcionRepository repo;
+	private InscripcionRepository inscripcionRepository;
+	private AlumnoRepository alumnoRepository;
+	private CursoRepository cursoRepository;
 
-	@Autowired
-	private AlumnoRepository alumnoRepo;
-
-	@Autowired
-	private CursoRepository cursoRepo;
-
-	public InscripcionDto inscribirAlumno(InscripcionDto dto) throws BusinessException, NotFoundException {
-
-		log.info("Inscribiendo alumno {} en curso {}", dto.getAlumnoId(), dto.getCursoId());
-
-		Optional<Alumno> optAlumno = alumnoRepo.findById(dto.getAlumnoId());
-
-		if (optAlumno.isEmpty()) {
-			log.error("Alumno no encontrado {}", dto.getAlumnoId());
-			throw new NotFoundException();
-		}
-
-		Optional<Curso> optCurso = cursoRepo.findById(dto.getCursoId());
-
-		if (optCurso.isEmpty()) {
-			log.error("Curso no encontrado {}", dto.getCursoId());
-			throw new NotFoundException();
-		}
-
-		Alumno alumno = optAlumno.get();
-		Curso curso = optCurso.get();
-
-		if (!curso.isActivo()) {
-			log.warn("Intento de inscripción en curso inactivo {}", curso.getId());
-			throw new BusinessException();
-		}
-
-		long inscripcionesActivas = repo.countByCursoIdAndEstado(curso.getId(), EstadoInscripcion.ACTIVA);
-
-		if (inscripcionesActivas >= curso.getPlazas()) {
-			log.warn("No hay plazas disponibles en el curso {}", curso.getId());
-			throw new BusinessException();
-		}
-
-		Inscripcion existente = repo.findByAlumnoIdAndCursoIdAndEstado(alumno.getId(), curso.getId(),
-				EstadoInscripcion.ACTIVA);
-
-		if (existente != null) {
-			log.warn("El alumno {} ya está inscrito en el curso {}", alumno.getId(), curso.getId());
-			throw new BusinessException();
-		}
-
-		Inscripcion ins = new Inscripcion();
-
-		ins.setAlumno(alumno);
-		ins.setCurso(curso);
-		ins.setFechaInscripcion(LocalDateTime.now());
-		ins.setEstado(EstadoInscripcion.ACTIVA);
-		ins.setObservaciones(dto.getObservaciones());
-
-		Inscripcion guardada = repo.save(ins);
-
-		log.info("Inscripción creada con id {}", guardada.getId());
-
-		return convertirDTO(guardada);
+	public InscripcionesService(InscripcionRepository inscripcionRepository, AlumnoRepository alumnoRepository,
+			CursoRepository cursoRepository) {
+		this.inscripcionRepository = inscripcionRepository;
+		this.alumnoRepository = alumnoRepository;
+		this.cursoRepository = cursoRepository;
 	}
 
-	public List<InscripcionDto> listarInscripciones() {
+	public List<Inscripcion> listarTodas() {
 
-		log.info("Listando todas las inscripciones");
+		List<Inscripcion> lista = inscripcionRepository.findAll();
 
-		List<Inscripcion> lista = repo.findAll();
-		List<InscripcionDto> listaDTO = new ArrayList<>();
+		logger.info("Listado de inscripciones realizado correctamente. Total {}", lista.size());
 
-		for (int i = 0; i < lista.size(); i++) {
-
-			Inscripcion ins = lista.get(i);
-			listaDTO.add(convertirDTO(ins));
-		}
-
-		return listaDTO;
+		return lista;
 	}
 
-	public InscripcionDto cancelarInscripcion(Long id) throws NotFoundException {
+	public List<Alumno> alumnosActivos() {
 
-		log.info("Cancelando inscripción {}", id);
+		List<Alumno> alumnos = alumnoRepository.findByActivoTrue();
 
-		Optional<Inscripcion> opt = repo.findById(id);
+		logger.info("Listado de alumnos activos realizado correctamente. Total {}", alumnos.size());
 
-		if (opt.isEmpty()) {
-			log.error("Inscripción no encontrada {}", id);
+		return alumnos;
+	}
+
+	public List<Curso> cursosActivosConPlazas() throws NotFoundException {
+
+		List<Curso> activos = cursoRepository.findByActivoTrue();
+		List<Curso> resultado = new ArrayList<>();
+
+		for (int i = 0; i < activos.size(); i++) {
+
+			Curso c = activos.get(i);
+
+			if (plazasRestantes(c.getId()) > 0) {
+				resultado.add(c);
+			}
+		}
+
+		logger.info("Listado de cursos activos con plazas disponible total {}", resultado.size());
+
+		return resultado;
+	}
+
+	public long plazasRestantes(Long cursoId) throws NotFoundException {
+
+		Curso curso = cursoRepository.findById(cursoId).orElse(null);
+
+		if (curso == null) {
+			logger.error("Curso no encontrado al calcular plazas restantes id {}", cursoId);
 			throw new NotFoundException();
 		}
 
-		Inscripcion ins = opt.get();
+		long ocupadas = inscripcionRepository.countByCursoIdAndEstado(cursoId, "ACTIVA");
+
+		long restantes = curso.getPlazas() - ocupadas;
+
+		logger.info("Plazas restantes calculadas correctamente curso {} restantes {}", cursoId, restantes);
+
+		return restantes;
+	}
+
+	public void inscribir(Long alumnoId, Long cursoId, String observaciones) throws BusinessException, NotFoundException {
+
+		Alumno alumno = alumnoRepository.findById(alumnoId).orElse(null);
+		Curso curso = cursoRepository.findById(cursoId).orElse(null);
+
+		if (alumno == null) {
+			logger.error("Alumno no encontrado id {}", alumnoId);
+			throw new NotFoundException();
+		}
+
+		if (curso == null) {
+			logger.error("Curso no encontrado id {}", cursoId);
+			throw new NotFoundException();
+		}
+
+		if (!alumno.isActivo() || !curso.isActivo()) {
+			logger.warn("Alumno o curso inactivo alumnoId {} cursoId {}", alumnoId, cursoId);
+			throw new BusinessException();
+		}
+
+		boolean duplicada = inscripcionRepository.existsByAlumnoIdAndCursoIdAndEstado(alumnoId, cursoId, "ACTIVA");
+
+		if (duplicada) {
+			logger.warn("Intento de inscripción duplicada alumnoId {} cursoId {}", alumnoId, cursoId);
+			throw new BusinessException();
+		}
+
+		long restantes = plazasRestantes(cursoId);
+
+		if (restantes <= 0) {
+			logger.warn("Intento de inscripción en curso sin plazas cursoId {}", cursoId);
+			throw new BusinessException();
+		}
+
+		Inscripcion i = new Inscripcion();
+
+		i.setAlumno(alumno);
+		i.setCurso(curso);
+		i.setFechaInscripcion(LocalDateTime.now());
+		i.setEstado(EstadoInscripcion.ACTIVA);
+		i.setObservaciones(observaciones);
+
+		inscripcionRepository.save(i);
+
+		logger.info("Inscripción creada correctamente alumnoId {} cursoId {}", alumnoId, cursoId);
+	}
+
+	public void cancelar(Long inscripcionId) throws NotFoundException {
+
+		Inscripcion ins = inscripcionRepository.findById(inscripcionId).orElse(null);
+
+		if (ins == null) {
+			logger.error("Inscripción no encontrada id {}", inscripcionId);
+			throw new NotFoundException();
+		}
 
 		ins.setEstado(EstadoInscripcion.CANCELADA);
 
-		Inscripcion guardada = repo.save(ins);
+		inscripcionRepository.save(ins);
 
-		log.info("Inscripción cancelada {}", id);
-
-		return convertirDTO(guardada);
+		logger.info("Inscripción cancelada correctamente id {}", inscripcionId);
 	}
 
-	private InscripcionDto convertirDTO(Inscripcion ins) {
+	public List<Inscripcion> listarPorEstado(String estado) {
 
-		InscripcionDto dto = new InscripcionDto();
+		List<Inscripcion> lista = inscripcionRepository.findByEstado(estado);
 
-		dto.setId(ins.getId());
-		dto.setAlumnoId(ins.getAlumno().getId());
-		dto.setCursoId(ins.getCurso().getId());
-		dto.setFechaInscripcion(ins.getFechaInscripcion());
-		dto.setEstado(ins.getEstado().name());
-		dto.setObservaciones(ins.getObservaciones());
+		logger.info("Listado de inscripciones por estado {} total {}", estado, lista.size());
 
-		return dto;
+		return lista;
 	}
 
-	public long contarInscripcionesActivas(Long cursoId) {
+	public List<InscripcionListDto> listarTodasDTO() {
 
-		log.info("Contando inscripciones activas del curso {}", cursoId);
+		List<Inscripcion> inscripciones = inscripcionRepository.findAll();
+		List<InscripcionListDto> listaDTO = new ArrayList<>();
 
-		return repo.countByCursoIdAndEstado(cursoId, EstadoInscripcion.ACTIVA);
-	}
+		for (int i = 0; i < inscripciones.size(); i++) {
 
-	public List<InscripcionDto> listarInscripcionesActivas(Long alumnoId) {
+			Inscripcion ins = inscripciones.get(i);
 
-		log.info("Listando inscripciones activas del alumno {}", alumnoId);
+			InscripcionListDto dto = new InscripcionListDto();
 
-		List<Inscripcion> listaEntidades = repo.findByAlumnoIdAndEstado(alumnoId, EstadoInscripcion.ACTIVA);
-		List<InscripcionDto> listaDTO = new ArrayList<InscripcionDto>();
+			String nombreCompleto = ins.getAlumno().getNombre() + " " + ins.getAlumno().getApellidos();
 
-		for (int i = 0; i < listaEntidades.size(); i++) {
-
-			Inscripcion ins = listaEntidades.get(i);
-
-			InscripcionDto dto = new InscripcionDto();
 			dto.setId(ins.getId());
-			dto.setAlumnoId(ins.getAlumno().getId());
-			dto.setCursoId(ins.getCurso().getId());
+			dto.setAlumnoNombreCompleto(nombreCompleto);
+			dto.setCursoNombre(ins.getCurso().getNombre());
 			dto.setFechaInscripcion(ins.getFechaInscripcion());
 			dto.setEstado(ins.getEstado().name());
 			dto.setObservaciones(ins.getObservaciones());
@@ -172,9 +188,7 @@ public class InscripcionesService {
 			listaDTO.add(dto);
 		}
 
-		if (listaDTO.isEmpty()) {
-			log.warn("El alumno {} no tiene inscripciones activas", alumnoId);
-		}
+		logger.info("Listado DTO de inscripciones generado correctamente total {}", listaDTO.size());
 
 		return listaDTO;
 	}

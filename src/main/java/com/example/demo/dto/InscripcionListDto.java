@@ -5,13 +5,13 @@ import java.time.LocalDateTime;
 public class InscripcionListDto {
 
     private Long id;
-    private Long alumnoId;
-    private Long cursoId;
+    private String alumnoNombreCompleto;
+    private String cursoNombre;
     private LocalDateTime fechaInscripcion;
     private String estado;
+    private String observaciones;
 
-    public InscripcionListDto() {
-    }
+    public InscripcionListDto() {}
 
     public Long getId() {
         return id;
@@ -21,20 +21,20 @@ public class InscripcionListDto {
         this.id = id;
     }
 
-    public Long getAlumnoId() {
-        return alumnoId;
+    public String getAlumnoNombreCompleto() {
+        return alumnoNombreCompleto;
     }
 
-    public void setAlumnoId(Long alumnoId) {
-        this.alumnoId = alumnoId;
+    public void setAlumnoNombreCompleto(String alumnoNombreCompleto) {
+        this.alumnoNombreCompleto = alumnoNombreCompleto;
     }
 
-    public Long getCursoId() {
-        return cursoId;
+    public String getCursoNombre() {
+        return cursoNombre;
     }
 
-    public void setCursoId(Long cursoId) {
-        this.cursoId = cursoId;
+    public void setCursoNombre(String cursoNombre) {
+        this.cursoNombre = cursoNombre;
     }
 
     public LocalDateTime getFechaInscripcion() {
@@ -51,5 +51,13 @@ public class InscripcionListDto {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
     }
 }

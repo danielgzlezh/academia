@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Alumno</title>
+</head>
+<body>
+
+<h1>Detalle del Alumno</h1>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <td th:text="${alumno.id}"></td>
+    </tr>
+
+    <tr>
+        <th>Nombre</th>
+        <td th:text="${alumno.nombre}"></td>
+    </tr>
+
+    <tr>
+        <th>Apellidos</th>
+        <td th:text="${alumno.apellidos}"></td>
+    </tr>
+
+    <tr>
+        <th>Email</th>
+        <td th:text="${alumno.email}"></td>
+    </tr>
+
+    <tr>
+        <th>Teléfono</th>
+        <td th:text="${alumno.telefono}"></td>
+    </tr>
+
+    <tr>
+        <th>Activo</th>
+        <td th:text="${alumno.activo}"></td>
+    </tr>
+</table>
+
+<br>
+
+<a th:href="@{/alumnos/list}">Volver a la lista</a>
+
+</body>
+</html>

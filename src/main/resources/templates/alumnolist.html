@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Lista Alumnos</title>
+</head>
+<body>
+
+	<h1>Alumnos</h1>
+
+	<div th:if="${mensaje}" style="color: green">
+		<span th:text="${mensaje}"></span>
+	</div>
+
+	<a th:href="@{/alumnos/new}">Nuevo alumno</a>
+
+	<table border="1">
+		<tr>
+			<th>ID</th>
+			<th>Nombre</th>
+			<th>Email</th>
+			<th>Activo</th>
+			<th>Acciones</th>
+		</tr>
+
+		<tr th:each="a : ${alumnos}">
+			<td th:text="${a.id}"></td>
+			<td th:text="${a.nombre}"></td>
+			<td th:text="${a.email}"></td>
+			<td th:text="${a.activo}"></td>
+
+			<td><a th:href="@{/alumnos/edit/{id}(id=${a.id})}">Editar</a></td>
+
+		</tr>
+
+	</table>
+
+</body>
+</html>

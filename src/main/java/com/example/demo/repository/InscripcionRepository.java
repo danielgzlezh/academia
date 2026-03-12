@@ -8,10 +8,15 @@ import com.example.demo.entitys.EstadoInscripcion;
 import com.example.demo.entitys.Inscripcion;
 
 public interface InscripcionRepository extends JpaRepository<Inscripcion, Long> {
-	long countByCursoIdAndEstado(Long cursoId, EstadoInscripcion estado);
+    
+    boolean existsByAlumnoIdAndCursoIdAndEstado(Long alumnoId, Long cursoId, String estado);
 
-	List<Inscripcion> findByAlumnoIdAndEstado(Long alumnoId, EstadoInscripcion estado);
+  
+    long countByCursoIdAndEstado(Long cursoId, String estado);
 
-	Inscripcion findByAlumnoIdAndCursoIdAndEstado(Long alumnoId, Long cursoId, EstadoInscripcion estado);
+
+    List<Inscripcion> findByAlumnoIdAndEstado(Long alumnoId, String estado);
+    List<Inscripcion> findByCursoIdAndEstado(Long cursoId, String estado);
+    List<Inscripcion> findByEstado(String estado);
 
 }

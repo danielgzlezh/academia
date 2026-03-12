@@ -1,172 +1,219 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.exception.NotFoundException;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.dto.AlumnoCreateDto;
 import com.example.demo.dto.AlumnoDetailDto;
-import com.example.demo.dto.AlumnoDto;
 import com.example.demo.dto.AlumnoListDto;
+import com.example.demo.dto.AlumnoUpdateDto;
 import com.example.demo.entitys.Alumno;
-import com.example.demo.exception.NotFoundException;
+import com.example.demo.entitys.Inscripcion;
 import com.example.demo.repository.AlumnoRepository;
+import com.example.demo.repository.InscripcionRepository;
 
 @Service
 public class AlumnoService {
 
-	private static final Logger log = LoggerFactory.getLogger(AlumnoService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AlumnoService.class);
 
-	@Autowired
-	private AlumnoRepository repo;
+    private final AlumnoRepository alumnoRepository;
+    private final InscripcionRepository inscripcionRepository;
 
-	public List<AlumnoListDto> listarAlumno() {
+    public AlumnoService(AlumnoRepository alumnoRepository, InscripcionRepository inscripcionRepository) {
+        this.alumnoRepository = alumnoRepository;
+        this.inscripcionRepository = inscripcionRepository;
+    }
 
-	    List<Alumno> lista = repo.findAll();
-	    List<AlumnoListDto> listaDTO = new ArrayList<>();
+    public List<Alumno> listarTodos() {
 
-	    for (int i = 0; i < lista.size(); i++) {
-	        Alumno a = lista.get(i);
+        List<Alumno> alumnos = alumnoRepository.findAll();
+        logger.info("Listado de alumnos realizado correctamente. Total {}", alumnos.size());
 
-	        AlumnoListDto dto = new AlumnoListDto();
-	        dto.setId(a.getId());
-	        dto.setNombre(a.getNombre());
-	        dto.setEmail(a.getEmail());
+        return alumnos;
+    }
 
-	        listaDTO.add(dto);
-	    }
+    public Alumno crear(Alumno alumno) {
 
-	    return listaDTO;
-	}
 
-	public AlumnoDetailDto crearAlumno(AlumnoCreateDto dto) {
+        alumno.setFechaAlta(LocalDate.now());
+        alumno.setActivo(true);
 
-	    Alumno entidad = new Alumno();
+        Alumno guardado = alumnoRepository.save(alumno);
 
-	    entidad.setNombre(dto.getNombre());
-	    entidad.setEmail(dto.getEmail());
+        logger.info("Alumno creado correctamente con id {}", guardado.getId());
 
-	    Alumno guardado = repo.save(entidad);
+        return guardado;
+    }
 
-	    AlumnoDetailDto detalle = new AlumnoDetailDto();
-	    detalle.setId(guardado.getId());
-	    detalle.setNombre(guardado.getNombre());
-	    detalle.setEmail(guardado.getEmail());
+    public Alumno buscarPorId(Long id) throws NotFoundException {
 
-	    return detalle;
-	}
+        Alumno alumno = alumnoRepository.findById(id).orElse(null);
 
-	public AlumnoDetailDto editarAlumno(Long id, AlumnoUpdateDto dto) throws NotFoundException {
+        if (alumno == null) {
+            logger.error("Alumno no encontrado con id {}", id);
+            throw new NotFoundException();
+        }
 
-	    Alumno a = repo.findById(id).orElse(null);
-	    if (a == null) {
-	        throw new NotFoundException();
-	    }
+        logger.info("Alumno encontrado correctamente id {}", id);
 
-	    a.setNombre(dto.getNombre());
-	    a.setApellidos(dto.getApellidos());
-	    a.setEmail(dto.getEmail());
-	    a.setTelefono(dto.getTelefono());
-	    a.setFechaAlta(dto.getFechaAlta());
-	    a.setActivo(dto.isActivo());
+        return alumno;
+    }
 
-	    Alumno guardado = repo.save(a);
+    public void desactivar(Long id) throws NotFoundException, BusinessException {
 
-	    return convertirADetailDto(guardado);
-	}
+        Alumno alumno = alumnoRepository.findById(id).orElse(null);
 
-	public AlumnoDetailDto obtenerPorId(Long id) throws NotFoundException {
-	    Alumno a = repo.findById(id).orElse(null);
-	    if(a == null) throw new NotFoundException();
+        if (alumno == null) {
+            logger.error("Alumno no encontrado al intentar desactivar id {}", id);
+            throw new NotFoundException();
+        }
 
-	    AlumnoDetailDto dto = new AlumnoDetailDto();
-	    dto.setId(a.getId());
-	    dto.setNombre(a.getNombre());
-	    dto.setEmail(a.getEmail());
+        if (!alumno.isActivo()) {
+            logger.warn("Intento de desactivar alumno ya inactivo id {}", id);
+            throw new BusinessException();
+        }
 
-	    return dto;
-	}
+        alumno.setActivo(false);
+        alumnoRepository.save(alumno);
 
-	public void eliminarAlumno(Long id) throws NotFoundException {
+        logger.info("Alumno desactivado correctamente id {}", id);
+    }
 
-		log.info("Eliminando alumno con id {}", id);
+    public void actualizar(Long id, Alumno datosFormulario) throws NotFoundException {
 
-		Optional<Alumno> opt = repo.findById(id);
+        Alumno alumnoBD = alumnoRepository.findById(id).orElse(null);
 
-		if (opt.isEmpty()) {
-			log.error("No se puede eliminar, alumno no encontrado {}", id);
-			throw new NotFoundException();
-		}
+        if (alumnoBD == null) {
+            logger.error("Alumno no encontrado al actualizar id {}", id);
+            throw new NotFoundException();
+        }
 
-		repo.delete(opt.get());
+        alumnoBD.setNombre(datosFormulario.getNombre());
+        alumnoBD.setApellidos(datosFormulario.getApellidos());
+        alumnoBD.setEmail(datosFormulario.getEmail());
+        alumnoBD.setTelefono(datosFormulario.getTelefono());
 
-		log.info("Alumno eliminado con id {}", id);
-	}
+        alumnoRepository.save(alumnoBD);
 
-	private AlumnoDto convertirDTO(Alumno a) {
+        logger.info("Alumno actualizado correctamente id {}", id);
+    }
 
-		AlumnoDto dto = new AlumnoDto();
+    public List<Alumno> buscarPorNombre(String nombre) {
 
-		dto.setId(a.getId());
-		dto.setNombre(a.getNombre());
-		dto.setApellidos(a.getApellidos());
-		dto.setEmail(a.getEmail());
-		dto.setTelefono(a.getTelefono());
-		dto.setFechaAlta(a.getFechaAlta());
-		dto.setActivo(a.isActivo());
+        List<Alumno> alumnos = alumnoRepository.findByNombreContainingIgnoreCase(nombre);
 
-		return dto;
-	}
+        if (alumnos.isEmpty()) {
+            logger.warn("Búsqueda por nombre sin resultados {}", nombre);
+        } else {
+            logger.info("Búsqueda por nombre realizada correctamente. Resultados {}", alumnos.size());
+        }
 
-    public List<AlumnoListDto> buscarPorNombre(String nombre) {
-        log.info("Buscando alumnos por nombre {}", nombre);
+        return alumnos;
+    }
 
-        List<Alumno> lista = repo.findByNombreContainingIgnoreCase(nombre);
+    public List<Inscripcion> inscripcionesActivas(Long alumnoId) throws NotFoundException {
+
+        Alumno alumno = alumnoRepository.findById(alumnoId).orElse(null);
+
+        if (alumno == null) {
+            logger.error("Alumno no encontrado al consultar inscripciones id {}", alumnoId);
+            throw new NotFoundException();
+        }
+
+        List<Inscripcion> lista = inscripcionRepository.findByAlumnoIdAndEstado(alumnoId, "ACTIVA");
+
+        logger.info("Consulta de inscripciones activas realizada para alumno {} total {}", alumnoId, lista.size());
+
+        return lista;
+    }
+
+    public void crearDesdeDTO(AlumnoCreateDto dto) {
+
+
+        Alumno a = new Alumno();
+        a.setNombre(dto.getNombre());
+        a.setApellidos(dto.getApellidos());
+        a.setEmail(dto.getEmail());
+        a.setActivo(dto.isActivo());
+        a.setFechaAlta(LocalDate.now());
+
+        alumnoRepository.save(a);
+
+        logger.info("Alumno creado desde DTO correctamente email {}", dto.getEmail());
+    }
+
+    public void actualizarDesdeDTO(Long id, AlumnoUpdateDto dto) throws NotFoundException {
+
+        Alumno a = alumnoRepository.findById(id).orElse(null);
+
+        if (a == null) {
+            logger.error("Alumno no encontrado al actualizar DTO id {}", id);
+            throw new NotFoundException();
+        }
+
+        a.setNombre(dto.getNombre());
+        a.setApellidos(dto.getApellidos());
+        a.setEmail(dto.getEmail());
+        a.setTelefono(dto.getTelefono());
+        a.setActivo(dto.isActivo());
+
+        alumnoRepository.save(a);
+
+        logger.info("Alumno actualizado desde DTO correctamente id {}", id);
+    }
+
+    public List<AlumnoListDto> listarTodosDTO() {
+
+        List<Alumno> alumnos = alumnoRepository.findAll();
         List<AlumnoListDto> listaDTO = new ArrayList<>();
 
-        for (int i = 0; i < lista.size(); i++) {
-            Alumno a = lista.get(i);
+        for (int i = 0; i < alumnos.size(); i++) {
+
+            Alumno a = alumnos.get(i);
 
             AlumnoListDto dto = new AlumnoListDto();
             dto.setId(a.getId());
             dto.setNombre(a.getNombre());
+            dto.setApellidos(a.getApellidos());
             dto.setEmail(a.getEmail());
+            dto.setActivo(a.isActivo());
 
             listaDTO.add(dto);
         }
 
-        if (listaDTO.isEmpty()) {
-            log.warn("No se encontraron alumnos con nombre {}", nombre);
-        }
+        logger.info("Listado DTO generado correctamente total {}", listaDTO.size());
 
         return listaDTO;
     }
 
-	public AlumnoDto buscarPorEmail(String email) throws NotFoundException {
+    public AlumnoDetailDto detalleDTO(Long id) throws NotFoundException {
 
-		log.info("Buscando alumno por email {}", email);
+        Alumno a = alumnoRepository.findById(id).orElse(null);
 
-		Alumno a = repo.findByEmailIgnoreCase(email);
+        if (a == null) {
+            logger.error("Alumno no encontrado en detalle id {}", id);
+            throw new NotFoundException();
+        }
 
-		if (a == null) {
-			log.error("Alumno no encontrado con email {}", email);
-			throw new NotFoundException();
-		}
+        AlumnoDetailDto dto = new AlumnoDetailDto();
+        dto.setId(a.getId());
+        dto.setNombre(a.getNombre());
+        dto.setApellidos(a.getApellidos());
+        dto.setEmail(a.getEmail());
+        dto.setTelefono(a.getTelefono());
+        dto.setFechaAlta(a.getFechaAlta().toString());
+        dto.setActivo(a.isActivo());
 
-		AlumnoDto dto = new AlumnoDto();
-		dto.setId(a.getId());
-		dto.setNombre(a.getNombre());
-		dto.setApellidos(a.getApellidos());
-		dto.setEmail(a.getEmail());
-		dto.setTelefono(a.getTelefono());
-		dto.setFechaAlta(a.getFechaAlta());
-		dto.setActivo(a.isActivo());
+        logger.info("Detalle de alumno cargado correctamente id {}", id);
 
-		return dto;
-	}
+        return dto;
+    }
 }

@@ -2,195 +2,243 @@ package com.example.demo.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.CursoDto;
+import com.example.demo.dto.CursoCreateDto;
+import com.example.demo.dto.CursoDetailDto;
+import com.example.demo.dto.CursoListDto;
+import com.example.demo.dto.CursoUpdateDto;
 import com.example.demo.entitys.Curso;
+import com.example.demo.entitys.Inscripcion;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.CursoRepository;
+import com.example.demo.repository.InscripcionRepository;
 
 @Service
 public class CursoService {
 
-	private static final Logger log = LoggerFactory.getLogger(CursoService.class);
+    private static final Logger logger = LoggerFactory.getLogger(CursoService.class);
 
-	@Autowired
-	private CursoRepository repo;
+    private final CursoRepository cursoRepository;
+    private final InscripcionRepository inscripcionRepository;
 
-	public List<CursoDto> listarCursos() {
+    public CursoService(CursoRepository cursoRepository, InscripcionRepository inscripcionRepository) {
+        this.cursoRepository = cursoRepository;
+        this.inscripcionRepository = inscripcionRepository;
+    }
 
-		log.info("Listando todos los cursos");
+    public List<Curso> listarTodos() {
 
-		List<Curso> lista = repo.findAll();
-		List<CursoDto> listaDTO = new ArrayList<>();
+        List<Curso> cursos = cursoRepository.findAll();
 
-		for (int i = 0; i < lista.size(); i++) {
-			Curso c = lista.get(i);
-			listaDTO.add(convertirDTO(c));
-		}
+        logger.info("Listado de cursos realizado correctamente. Total {}", cursos.size());
 
-		return listaDTO;
-	}
+        return cursos;
+    }
 
-	public CursoDto crearCurso(CursoDto dto) {
+    public Curso buscarPorId(Long id) throws NotFoundException {
 
-		log.info("Creando curso {}", dto.getNombre());
+        Curso curso = cursoRepository.findById(id).orElse(null);
 
-		Curso entidad = new Curso();
+        if (curso == null) {
+            logger.error("Curso no encontrado con id {}", id);
+            throw new NotFoundException();
+        }
 
-		entidad.setNombre(dto.getNombre());
-		entidad.setCategoria(dto.getCategoria());
-		entidad.setNivel(dto.getNivel());
-		entidad.setFechainicio(dto.getFechaInicio());
-		entidad.setFechafin(dto.getFechaFin());
-		entidad.setPlazas(dto.getPlazas());
-		entidad.setActivo(dto.isActivo());
+        logger.info("Curso encontrado correctamente id {}", id);
 
-		Curso guardado = repo.save(entidad);
+        return curso;
+    }
 
-		log.info("Curso creado con id {}", guardado.getId());
+    public Curso crear(Curso curso) {
 
-		return convertirDTO(guardado);
-	}
+        curso.setActivo(true);
 
-	public CursoDto editarCurso(Long id, CursoDto dto) throws NotFoundException {
+        Curso guardado = cursoRepository.save(curso);
 
-		log.info("Editando curso con id {}", id);
+        logger.info("Curso creado correctamente con id {}", guardado.getId());
 
-		Optional<Curso> opt = repo.findById(id);
+        return guardado;
+    }
 
-		if (opt.isEmpty()) {
-			log.error("Curso no encontrado con id {}", id);
-			throw new NotFoundException();
-		}
+    public void actualizar(Long id, Curso datosFormulario) throws NotFoundException {
 
-		Curso c = opt.get();
+        Curso cursoBD = cursoRepository.findById(id).orElse(null);
 
-		c.setNombre(dto.getNombre());
-		c.setCategoria(dto.getCategoria());
-		c.setNivel(dto.getNivel());
-		c.setFechainicio(dto.getFechaInicio());
-		c.setFechafin(dto.getFechaFin());
-		c.setPlazas(dto.getPlazas());
-		c.setActivo(dto.isActivo());
+        if (cursoBD == null) {
+            logger.error("Intento de actualizar curso no existente id {}", id);
+            throw new NotFoundException();
+        }
 
-		Curso guardado = repo.save(c);
+        cursoBD.setNombre(datosFormulario.getNombre());
+        cursoBD.setCategoria(datosFormulario.getCategoria());
+        cursoBD.setNivel(datosFormulario.getNivel());
+        cursoBD.setFechainicio(datosFormulario.getFechaInicio());
+        cursoBD.setFechafin(datosFormulario.getFechafin());
+        cursoBD.setPlazas(datosFormulario.getPlazas());
 
-		log.info("Curso actualizado con id {}", guardado.getId());
+        cursoRepository.save(cursoBD);
 
-		return convertirDTO(guardado);
-	}
+        logger.info("Curso actualizado correctamente id {}", id);
+    }
 
-	public CursoDto obtenerPorId(Long id) throws NotFoundException {
+    public void desactivar(Long id) throws NotFoundException {
 
-		log.info("Buscando curso con id {}", id);
+        Curso cursoBD = cursoRepository.findById(id).orElse(null);
 
-		Optional<Curso> opt = repo.findById(id);
+        if (cursoBD == null) {
+            logger.error("Intento de desactivar curso no existente id {}", id);
+            throw new NotFoundException();
+        }
 
-		if (opt.isEmpty()) {
-			log.error("Curso no encontrado con id {}", id);
-			throw new NotFoundException();
-		}
+        cursoBD.setActivo(false);
 
-		return convertirDTO(opt.get());
-	}
+        cursoRepository.save(cursoBD);
 
-	public void eliminarCurso(Long id) throws NotFoundException {
+        logger.info("Curso desactivado correctamente id {}", id);
+    }
 
-		log.info("Eliminando curso con id {}", id);
+    public long plazasOcupadas(Long cursoId) throws NotFoundException {
 
-		Optional<Curso> opt = repo.findById(id);
+        Curso curso = cursoRepository.findById(cursoId).orElse(null);
 
-		if (opt.isEmpty()) {
-			log.error("No se puede eliminar, curso no encontrado {}", id);
-			throw new NotFoundException();
-		}
+        if (curso == null) {
+            logger.error("Curso no encontrado al calcular plazas ocupadas id {}", cursoId);
+            throw new NotFoundException();
+        }
 
-		repo.delete(opt.get());
+        long ocupadas = inscripcionRepository.countByCursoIdAndEstado(cursoId, "ACTIVA");
 
-		log.info("Curso eliminado con id {}", id);
-	}
+        logger.info("Plazas ocupadas calculadas correctamente para curso {} total {}", cursoId, ocupadas);
 
-	private CursoDto convertirDTO(Curso c) {
+        return ocupadas;
+    }
 
-		CursoDto dto = new CursoDto();
+    public List<Curso> buscarPorCategoria(String categoria) {
 
-		dto.setId(c.getId());
-		dto.setNombre(c.getNombre());
-		dto.setCategoria(c.getCategoria());
-		dto.setNivel(c.getNivel());
-		dto.setFechaInicio(c.getFechaInicio());
-		dto.setFechaFin(c.getFechafin());
-		dto.setPlazas(c.getPlazas());
-		dto.setActivo(c.isActivo());
+        List<Curso> cursos = cursoRepository.findByCategoriaContainingIgnoreCase(categoria);
 
-		return dto;
-	}
+        if (cursos.isEmpty()) {
+            logger.warn("Búsqueda por categoría sin resultados {}", categoria);
+        } else {
+            logger.info("Búsqueda por categoría realizada correctamente resultados {}", cursos.size());
+        }
 
-	public List<CursoDto> listarPorCategoriaYNivel(String categoria, String nivel) {
+        return cursos;
+    }
 
-		log.info("Buscando cursos por categoria {} y nivel {}", categoria, nivel);
+    public void actualizarDesdeDTO(Long id, CursoUpdateDto dto) throws NotFoundException {
 
-		List<Curso> listaEntidades = repo.findByCategoriaIgnoreCaseAndNivelIgnoreCase(categoria, nivel);
-		List<CursoDto> listaDTO = new ArrayList<CursoDto>();
+        Curso c = cursoRepository.findById(id).orElse(null);
 
-		for (int i = 0; i < listaEntidades.size(); i++) {
+        if (c == null) {
+            logger.error("Curso no encontrado al actualizar DTO id {}", id);
+            throw new NotFoundException();
+        }
 
-			Curso c = listaEntidades.get(i);
+        c.setNombre(dto.getNombre());
+        c.setCategoria(dto.getCategoria());
+        c.setNivel(dto.getNivel());
+        c.setFechainicio(dto.getFechaInicio());
+        c.setFechafin(dto.getFechaFin());
+        c.setPlazas(dto.getPlazas());
+        c.setActivo(dto.isActivo());
 
-			CursoDto dto = new CursoDto();
-			dto.setId(c.getId());
-			dto.setNombre(c.getNombre());
-			dto.setCategoria(c.getCategoria());
-			dto.setNivel(c.getNivel());
-			dto.setFechaInicio(c.getFechaInicio());
-			dto.setFechaFin(c.getFechafin());
-			dto.setPlazas(c.getPlazas());
-			dto.setActivo(c.isActivo());
+        cursoRepository.save(c);
 
-			listaDTO.add(dto);
-		}
+        logger.info("Curso actualizado desde DTO correctamente id {}", id);
+    }
 
-		if (listaDTO.isEmpty()) {
-			log.warn("No se encontraron cursos para categoria {} y nivel {}", categoria, nivel);
-		}
+    public void crearDesdeDTO(CursoCreateDto dto) {
 
-		return listaDTO;
-	}
+        Curso c = new Curso();
 
-	public List<CursoDto> topCursosMasInscritos() {
+        c.setNombre(dto.getNombre());
+        c.setCategoria(dto.getCategoria());
+        c.setNivel(dto.getNivel());
+        c.setFechainicio(dto.getFechaInicio());
+        c.setFechafin(dto.getFechaFin());
+        c.setPlazas(dto.getPlazas());
+        c.setActivo(dto.isActivo());
 
-		log.info("Obteniendo top cursos con mas inscritos");
+        cursoRepository.save(c);
 
-		List<Object[]> resultados = repo.topCursosMasInscritos();
-		List<CursoDto> listaDTO = new ArrayList<CursoDto>();
+        logger.info("Curso creado desde DTO correctamente nombre {}", dto.getNombre());
+    }
 
-		for (int i = 0; i < resultados.size(); i++) {
+    public List<CursoListDto> listarTodosDTO() {
 
-			Curso c = (Curso) resultados.get(i)[0];
+        List<Curso> cursos = cursoRepository.findAll();
+        List<CursoListDto> listaDTO = new ArrayList<>();
 
-			CursoDto dto = new CursoDto();
-			dto.setId(c.getId());
-			dto.setNombre(c.getNombre());
-			dto.setCategoria(c.getCategoria());
-			dto.setNivel(c.getNivel());
-			dto.setFechaInicio(c.getFechaInicio());
-			dto.setFechaFin(c.getFechafin());
-			dto.setPlazas(c.getPlazas());
-			dto.setActivo(c.isActivo());
+        for (int i = 0; i < cursos.size(); i++) {
 
-			listaDTO.add(dto);
-		}
+            Curso c = cursos.get(i);
 
-		if (listaDTO.isEmpty()) {
-			log.warn("No hay cursos con inscripciones registradas");
-		}
+            CursoListDto dto = new CursoListDto();
 
-		return listaDTO;
-	}
+            dto.setId(c.getId());
+            dto.setNombre(c.getNombre());
+            dto.setCategoria(c.getCategoria());
+            dto.setNivel(c.getNivel());
+            dto.setFechaInicio(c.getFechaInicio().toString());
+            dto.setFechaFin(c.getFechafin().toString());
+            dto.setPlazas(c.getPlazas());
+            dto.setActivo(c.isActivo());
+
+            listaDTO.add(dto);
+        }
+
+        logger.info("Listado DTO de cursos generado correctamente total {}", listaDTO.size());
+
+        return listaDTO;
+    }
+
+    public CursoDetailDto detalleDTO(Long id) throws NotFoundException {
+
+        Curso c = cursoRepository.findById(id).orElse(null);
+
+        if (c == null) {
+            logger.error("Curso no encontrado en detalle id {}", id);
+            throw new NotFoundException();
+        }
+
+        long plazasOcupadas = inscripcionRepository.countByCursoIdAndEstado(id, "ACTIVA");
+        long plazasRestantes = c.getPlazas() - plazasOcupadas;
+
+        List<Inscripcion> inscripciones = inscripcionRepository.findByCursoIdAndEstado(id, "ACTIVA");
+
+        List<String> alumnosInscritos = new ArrayList<>();
+
+        for (int i = 0; i < inscripciones.size(); i++) {
+
+            Inscripcion ins = inscripciones.get(i);
+
+            String nombreAlumno = ins.getAlumno().getNombre() + " " + ins.getAlumno().getApellidos();
+
+            alumnosInscritos.add(nombreAlumno);
+        }
+
+        CursoDetailDto dto = new CursoDetailDto();
+
+        dto.setId(c.getId());
+        dto.setNombre(c.getNombre());
+        dto.setCategoria(c.getCategoria());
+        dto.setNivel(c.getNivel());
+        dto.setFechaInicio(c.getFechaInicio().toString());
+        dto.setFechaFin(c.getFechafin().toString());
+        dto.setPlazas(c.getPlazas());
+        dto.setActivo(c.isActivo());
+
+        dto.setPlazasOcupadas((int) plazasOcupadas);
+        dto.setPlazasRestantes((int) plazasRestantes);
+        dto.setAlumnosInscritos(alumnosInscritos);
+
+        logger.info("Detalle de curso cargado correctamente id {}", id);
+
+        return dto;
+    }
 }

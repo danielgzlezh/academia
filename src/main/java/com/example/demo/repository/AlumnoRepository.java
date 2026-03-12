@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.entitys.Alumno;
 
 public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
+	List<Alumno> findByActivoTrue();
 	List<Alumno> findByNombreContainingIgnoreCase(String nombre);
-
-	Alumno findByEmailIgnoreCase(String email);
-
+	List<Alumno> findByEmailContainingIgnoreCase(String email);
+  
 }

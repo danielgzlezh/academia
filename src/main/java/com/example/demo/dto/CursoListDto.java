@@ -1,18 +1,20 @@
 package com.example.demo.dto;
 
-import java.time.LocalDate;
+public class CursoListDto {
 
-public class CursoUpdateDto {
-
+    private Long id;
     private String nombre;
     private String categoria;
     private String nivel;
-    private LocalDate fechaInicio;
-    private LocalDate fechaFin;
+    private String fechaInicio;
+    private String fechaFin;
     private int plazas;
     private boolean activo;
 
-    public CursoUpdateDto() {}
+    public CursoListDto() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -23,11 +25,11 @@ public class CursoUpdateDto {
     public String getNivel() { return nivel; }
     public void setNivel(String nivel) { this.nivel = nivel; }
 
-    public LocalDate getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+    public String getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(String fechaInicio) { this.fechaInicio = fechaInicio; }
 
-    public LocalDate getFechaFin() { return fechaFin; }
-    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+    public String getFechaFin() { return fechaFin; }
+    public void setFechaFin(String fechaFin) { this.fechaFin = fechaFin; }
 
     public int getPlazas() { return plazas; }
     public void setPlazas(int plazas) { this.plazas = plazas; }

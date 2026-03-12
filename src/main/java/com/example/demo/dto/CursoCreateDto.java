@@ -1,35 +1,37 @@
 package com.example.demo.dto;
 
+import java.time.LocalDate;
+
 public class CursoCreateDto {
 
-    private Long id;
     private String nombre;
-    private String email;
+    private String categoria;
+    private String nivel;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
+    private int plazas;
+    private boolean activo;
 
-    public CursoCreateDto() {
-    }
+    public CursoCreateDto() {}
 
-    public Long getId() {
-        return id;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public String getNivel() { return nivel; }
+    public void setNivel(String nivel) { this.nivel = nivel; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
 
-    public String getEmail() {
-        return email;
-    }
+    public LocalDate getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public int getPlazas() { return plazas; }
+    public void setPlazas(int plazas) { this.plazas = plazas; }
+
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 }
