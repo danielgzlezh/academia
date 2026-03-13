@@ -30,7 +30,7 @@ public class AlumnoController {
     }
     @GetMapping("/alumnos/new")
     public String mostrarFormulario(Model model) {
-        model.addAttribute("alumno", new Alumno());
+        model.addAttribute("alumno", new AlumnoCreateDto());
         return "alumnosform";
     }
     @PostMapping("/alumnos/save")
@@ -57,7 +57,7 @@ public class AlumnoController {
     @GetMapping("/alumnos/buscar")
     public String buscar(@RequestParam String nombre, Model model) {
         model.addAttribute("alumnos", alumnoService.buscarPorNombre(nombre));
-        return "alumnoslist";
+        return "alumnolist";
     }
     @GetMapping("/alumnos/detail/{id}")
     public String detalle(@PathVariable Long id, Model model) throws NotFoundException {

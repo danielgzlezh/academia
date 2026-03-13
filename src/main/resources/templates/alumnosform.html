@@ -7,7 +7,7 @@
 
 	<h1>Crear alumno</h1>
 
-	<form th:action="@{/alumnos/new}" th:object="${alumno}" method="post">
+	<form th:action="@{/alumnos/save}" th:object="${alumno}" method="post">
 
 		Nombre <input type="text" th:field="*{nombre}"> <br>
 

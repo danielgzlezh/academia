@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.demo.dto.InscripcionCreateDto;
+import com.example.demo.entitys.EstadoInscripcion;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.service.InscripcionesService;
@@ -40,7 +41,7 @@ public class InscripcionController {
         return "redirect:/inscripciones/list";
     }
     @GetMapping("/inscripciones/estado")
-    public String porEstado(@RequestParam String estado, Model model) {
+    public String porEstado(@RequestParam EstadoInscripcion estado, Model model) {
         model.addAttribute("inscripciones", inscripcionService.listarPorEstado(estado));
         return "inscripciones-list";
     }

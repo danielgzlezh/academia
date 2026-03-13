@@ -84,7 +84,7 @@ public class InscripcionesService {
 			throw new NotFoundException();
 		}
 
-		long ocupadas = inscripcionRepository.countByCursoIdAndEstado(cursoId, "ACTIVA");
+		long ocupadas = inscripcionRepository.countByCursoIdAndEstado(cursoId, EstadoInscripcion.ACTIVA);
 
 		long restantes = curso.getPlazas() - ocupadas;
 
@@ -113,7 +113,7 @@ public class InscripcionesService {
 			throw new BusinessException();
 		}
 
-		boolean duplicada = inscripcionRepository.existsByAlumnoIdAndCursoIdAndEstado(alumnoId, cursoId, "ACTIVA");
+		boolean duplicada = inscripcionRepository.existsByAlumnoIdAndCursoIdAndEstado(alumnoId, cursoId, EstadoInscripcion.ACTIVA);
 
 		if (duplicada) {
 			logger.warn("Intento de inscripción duplicada alumnoId {} cursoId {}", alumnoId, cursoId);
@@ -156,7 +156,7 @@ public class InscripcionesService {
 		logger.info("Inscripción cancelada correctamente id {}", inscripcionId);
 	}
 
-	public List<Inscripcion> listarPorEstado(String estado) {
+	public List<Inscripcion> listarPorEstado(EstadoInscripcion estado) {
 
 		List<Inscripcion> lista = inscripcionRepository.findByEstado(estado);
 

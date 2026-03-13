@@ -1,38 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>Lista Alumnos</title>
+    <title>Lista de Alumnos</title>
 </head>
 <body>
-
-	<h1>Alumnos</h1>
-
-	<div th:if="${mensaje}" style="color: green">
-		<span th:text="${mensaje}"></span>
-	</div>
-
-	<a th:href="@{/alumnos/new}">Nuevo alumno</a>
-
-	<table border="1">
-		<tr>
-			<th>ID</th>
-			<th>Nombre</th>
-			<th>Email</th>
-			<th>Activo</th>
-			<th>Acciones</th>
-		</tr>
-
-		<tr th:each="a : ${alumnos}">
-			<td th:text="${a.id}"></td>
-			<td th:text="${a.nombre}"></td>
-			<td th:text="${a.email}"></td>
-			<td th:text="${a.activo}"></td>
-
-			<td><a th:href="@{/alumnos/edit/{id}(id=${a.id})}">Editar</a></td>
-
-		</tr>
-
-	</table>
-
+    <h1>Alumnos</h1>
+    <a th:href="@{/alumnos/new}">Nuevo Alumno</a>
+    <table border="1">
+        <tr>
+            <th>ID</th><th>Nombre</th><th>Apellidos</th><th>Email</th><th>Teléfono</th><th>Activo</th><th>Acciones</th>
+        </tr>
+        <tr th:each="alumno : ${alumnos}">
+            <td th:text="${alumno.id}"></td>
+            <td th:text="${alumno.nombre}"></td>
+            <td th:text="${alumno.apellidos}"></td>
+            <td th:text="${alumno.email}"></td>
+            <td th:text="${alumno.telefono}"></td>
+            <td th:text="${alumno.activo}"></td>
+            <td>
+                <a th:href="@{/alumnos/edit/{id}(id=${alumno.id})}">Editar</a> |
+                <a th:href="@{/alumnos/desactivar/{id}(id=${alumno.id})}">Desactivar</a> |
+                <a th:href="@{/alumnos/detail/{id}(id=${alumno.id})}">Detalle</a>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

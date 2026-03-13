@@ -6,7 +6,15 @@ public class AlumnoListDto {
     private String nombre;
     private String apellidos;
     private String email;
-    private boolean activo;
+    private String telefono;
+    public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+	private boolean activo;
 
     public AlumnoListDto() {}
 

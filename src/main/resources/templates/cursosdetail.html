@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Curso</title>
+</head>
+<body>
+<h1 th:text="${curso.nombre} + ' - Detalle'"></h1>
+
+<p><b>Categoría:</b> <span th:text="${curso.categoria}"></span></p>
+<p><b>Nivel:</b> <span th:text="${curso.nivel}"></span></p>
+<p><b>Fecha Inicio:</b> <span th:text="${curso.fechaInicio}"></span></p>
+<p><b>Fecha Fin:</b> <span th:text="${curso.fechaFin}"></span></p>
+<p><b>Plazas:</b> <span th:text="${curso.plazas}"></span></p>
+<p><b>Plazas Ocupadas:</b> <span th:text="${curso.plazasOcupadas}"></span></p>
+<p><b>Plazas Restantes:</b> <span th:text="${curso.plazasRestantes}"></span></p>
+<p><b>Activo:</b> <span th:text="${curso.activo}"></span></p>
+
+<h2>Alumnos Inscritos</h2>
+<ul>
+    <li th:each="alumno : ${curso.alumnosInscritos}" th:text="${alumno}"></li>
+</ul>
+
+<a th:href="@{/cursos}">Volver a la lista</a>
+</body>
+</html>

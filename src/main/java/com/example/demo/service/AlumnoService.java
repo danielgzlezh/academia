@@ -15,6 +15,7 @@ import com.example.demo.dto.AlumnoDetailDto;
 import com.example.demo.dto.AlumnoListDto;
 import com.example.demo.dto.AlumnoUpdateDto;
 import com.example.demo.entitys.Alumno;
+import com.example.demo.entitys.EstadoInscripcion;
 import com.example.demo.entitys.Inscripcion;
 import com.example.demo.repository.AlumnoRepository;
 import com.example.demo.repository.InscripcionRepository;
@@ -128,7 +129,7 @@ public class AlumnoService {
             throw new NotFoundException();
         }
 
-        List<Inscripcion> lista = inscripcionRepository.findByAlumnoIdAndEstado(alumnoId, "ACTIVA");
+        List<Inscripcion> lista = inscripcionRepository.findByAlumnoIdAndEstado(alumnoId, EstadoInscripcion.ACTIVA);
 
         logger.info("Consulta de inscripciones activas realizada para alumno {} total {}", alumnoId, lista.size());
 

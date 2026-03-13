@@ -25,13 +25,13 @@ public class CursoController {
     @GetMapping("/cursos/list")
     public String listar(Model model) {
         model.addAttribute("cursos", cursoService.listarTodosDTO());
-        return "cursos-list";
+        return "cursoslist";
     }
 
     @GetMapping("/cursos/new")
     public String mostrarFormulario(Model model) {
         model.addAttribute("curso", new Curso());
-        return "cursos-form";
+        return "cursosform";
     }
 
     @PostMapping("/cursos/save")
@@ -44,7 +44,7 @@ public class CursoController {
     public String editar(@PathVariable Long id, Model model) throws NotFoundException {
         Curso curso = cursoService.buscarPorId(id);
         model.addAttribute("curso", curso);
-        return "cursos-form";
+        return "cursosform";
     }
 
     @PostMapping("/cursos/update/{id}")
@@ -63,11 +63,11 @@ public class CursoController {
 
         model.addAttribute("curso", cursoService.detalleDTO(id));
 
-        return "cursos-detail";
+        return "cursosdetail";
     }
     @GetMapping("/cursos/buscar")
     public String buscar(@RequestParam String categoria, Model model) {
         model.addAttribute("cursos", cursoService.buscarPorCategoria(categoria));
-        return "cursos-list";
+        return "cursoslist";
     }
 }
