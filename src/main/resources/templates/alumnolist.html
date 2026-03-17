@@ -1,28 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Lista de Alumnos</title>
+<title>Lista de Alumnos</title>
 </head>
 <body>
-    <h1>Alumnos</h1>
-    <a th:href="@{/alumnos/new}">Nuevo Alumno</a>
-    <table border="1">
-        <tr>
-            <th>ID</th><th>Nombre</th><th>Apellidos</th><th>Email</th><th>Teléfono</th><th>Activo</th><th>Acciones</th>
-        </tr>
-        <tr th:each="alumno : ${alumnos}">
-            <td th:text="${alumno.id}"></td>
-            <td th:text="${alumno.nombre}"></td>
-            <td th:text="${alumno.apellidos}"></td>
-            <td th:text="${alumno.email}"></td>
-            <td th:text="${alumno.telefono}"></td>
-            <td th:text="${alumno.activo}"></td>
-            <td>
-                <a th:href="@{/alumnos/edit/{id}(id=${alumno.id})}">Editar</a> |
-                <a th:href="@{/alumnos/desactivar/{id}(id=${alumno.id})}">Desactivar</a> |
-                <a th:href="@{/alumnos/detail/{id}(id=${alumno.id})}">Detalle</a>
-            </td>
-        </tr>
-    </table>
+	<h1>Alumnos</h1>
+	<a th:href="@{/alumnos/new}">Nuevo Alumno</a>
+	<table border="1">
+		<tr>
+			<th>ID</th>
+			<th>Nombre</th>
+			<th>Apellidos</th>
+			<th>Email</th>
+			<th>Teléfono</th>
+			<th>Activo</th>
+			<th>Acciones</th>
+		</tr>
+		<tr th:each="alumno : ${alumnos}">
+			<td th:text="${alumno.id}"></td>
+			<td th:text="${alumno.nombre}"></td>
+			<td th:text="${alumno.apellidos}"></td>
+			<td th:text="${alumno.email}"></td>
+			<td th:text="${alumno.telefono}"></td>
+			<td th:text="${alumno.activo}"></td>
+			<td><a th:href="@{/alumnos/edit/{id}(id=${alumno.id})}">Editar</a>
+				| <span th:if="${alumno.activo}"> <a
+					th:href="@{/alumnos/desactivar/{id}(id=${alumno.id})}">Desactivar</a>
+			</span> <span th:unless="${alumno.activo}"> <a
+					th:href="@{/alumnos/activar/{id}(id=${alumno.id})}">Activar</a>
+			</span> | <a th:href="@{/alumnos/detail/{id}(id=${alumno.id})}">Detalle</a>
+			</td>
+		</tr>
+	</table>
 </body>
 </html>

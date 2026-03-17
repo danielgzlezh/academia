@@ -67,4 +67,9 @@ public class AlumnoController {
 
         return "alumnosdetail";
     }
+    @GetMapping("/alumnos/activar/{id}")
+    public String activar(@PathVariable Long id) throws NotFoundException, BusinessException {
+        alumnoService.activar(id);
+        return "redirect:/alumnos/list";
+    }
 }

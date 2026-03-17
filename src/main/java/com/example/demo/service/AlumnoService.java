@@ -217,4 +217,23 @@ public class AlumnoService {
 
         return dto;
     }
+    public void activar(Long id) throws NotFoundException, BusinessException {
+
+        Alumno alumno = alumnoRepository.findById(id).orElse(null);
+
+        if (alumno == null) {
+            logger.error("Alumno no encontrado al intentar activar id {}", id);
+            throw new NotFoundException();
+        }
+
+        if (alumno.isActivo()) {
+            logger.warn("Intento de activar alumno ya activo id {}", id);
+            throw new BusinessException();
+        }
+
+        alumno.setActivo(true);
+        alumnoRepository.save(alumno);
+
+        logger.info("Alumno activado correctamente id {}", id);
+    }
 }

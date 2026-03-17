@@ -1,41 +1,47 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Lista de cursos</title>
+    <meta charset="UTF-8">
+    <title>Lista de cursos</title>
 </head>
 <body>
 
-	<h1>Lista de cursos</h1>
+<h1>Lista de cursos</h1>
 
-	<a th:href="@{/cursos/new}">Crear nuevo curso</a>
+<a th:href="@{/cursos/new}">Crear nuevo curso</a>
 
-	<table border="1">
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Categoria</th>
+        <th>Nivel</th>
+        <th>Activo</th>
+        <th>Acciones</th>
+    </tr>
 
-		<tr>
-			<th>ID</th>
-			<th>Nombre</th>
-			<th>Categoria</th>
-			<th>Acciones</th>
-		</tr>
+    <tr th:each="curso : ${cursos}">
+        <td th:text="${curso.id}"></td>
+        <td th:text="${curso.nombre}"></td>
+        <td th:text="${curso.categoria}"></td>
+        <td th:text="${curso.nivel}"></td>
+        <td th:text="${curso.activo}"></td>
+        <td>
+            <a th:href="@{/cursos/detail/{id}(id=${curso.id})}">Detalle</a> |
+            <a th:href="@{/cursos/edit/{id}(id=${curso.id})}">Editar</a> |
+            
+            <span th:if="${curso.activo}">
+                <a th:href="@{/cursos/desactivar/{id}(id=${curso.id})}">Desactivar</a>
+            </span>
+            <span th:if="${!curso.activo}">
+                <a th:href="@{/cursos/activar/{id}(id=${curso.id})}">Activar</a>
+            </span>
+        </td>
+    </tr>
+</table>
 
-		<tr th:each="curso : ${cursos}">
-
-			<td th:text="${curso.id}"></td>
-			<td th:text="${curso.nombre}"></td>
-			<td th:text="${curso.categoria}"></td>
-
-			<td><a th:href="@{/cursos/detail/{id}(id=${curso.id})}">Detalle</a>
-
-				<a th:href="@{/cursos/edit/{id}(id=${curso.id})}">Editar</a></td>
-
-		</tr>
-
-	</table>
-
-	<br>
-
-	<a th:href="@{/alumnos/list}">Volver a alumnos</a>
+<br>
+<a th:href="@{/alumnos/list}">Volver a alumnos</a>
 
 </body>
 </html>

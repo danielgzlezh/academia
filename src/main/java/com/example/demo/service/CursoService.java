@@ -190,4 +190,18 @@ public class CursoService {
         logger.info("Detalle de curso cargado correctamente id " + id);
         return dto;
     }
+    public void activar(Long id) throws NotFoundException {
+        Curso curso = cursoRepository.findById(id).orElse(null);
+        if (curso == null) {
+            logger.error("Curso no encontrado al intentar activar id {}", id);
+            throw new NotFoundException();
+        }
+        if (curso.isActivo()) {
+            logger.warn("Intento de activar curso ya activo id {}", id);
+            return;
+        }
+        curso.setActivo(true);
+        cursoRepository.save(curso);
+        logger.info("Curso activado correctamente id {}", id);
+    }
 }

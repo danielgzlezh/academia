@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Listado de inscripciones</title>
+</head>
+<body>
+
+	<h1>Listado de inscripciones</h1>
+
+	<a href="/inscripciones/new">Nueva inscripción</a>
+	<a href="/">Inicio</a>
+
+	<br>
+	<br>
+
+	<table border="1">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Alumno</th>
+				<th>Curso</th>
+				<th>Fecha</th>
+				<th>Estado</th>
+				<th>Observaciones</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="i : ${inscripciones}">
+				<td th:text="${i.id}"></td>
+				<td th:text="${i.alumnoNombreCompleto}"></td>
+				<td th:text="${i.cursoNombre}"></td>
+				<td th:text="${i.fechaInscripcion}"></td>
+				<td th:text="${i.estado}"></td>
+				<td th:text="${i.observaciones}"></td>
+				<td><a th:if="${i.estado == 'ACTIVA'}"
+					th:href="@{/inscripciones/cancelar/{id}(id=${i.id})}"> Cancelar
+				</a></td>
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+</html>

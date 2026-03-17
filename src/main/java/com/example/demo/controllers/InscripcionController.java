@@ -25,14 +25,14 @@ public class InscripcionController {
     @GetMapping("/inscripciones/list")
     public String listar(Model model) {
         model.addAttribute("inscripciones", inscripcionService.listarTodasDTO());
-        return "inscripciones-list";
+        return "inscripciones";
     }
     
     @GetMapping("/inscripciones/new")
     public String formulario(Model model) throws NotFoundException {
         model.addAttribute("alumnos", inscripcionService.alumnosActivos());
         model.addAttribute("cursos", inscripcionService.cursosActivosConPlazas());
-        return "inscripciones-form";
+        return "inscripcionesform";
     }
 
     @GetMapping("/inscripciones/cancelar/{id}")
@@ -43,7 +43,7 @@ public class InscripcionController {
     @GetMapping("/inscripciones/estado")
     public String porEstado(@RequestParam EstadoInscripcion estado, Model model) {
         model.addAttribute("inscripciones", inscripcionService.listarPorEstado(estado));
-        return "inscripciones-list";
+        return "inscripciones";
     }
     @PostMapping("/inscripciones/save")
     public String guardar(InscripcionCreateDto dto) throws BusinessException, NotFoundException {

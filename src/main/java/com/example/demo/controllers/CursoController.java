@@ -70,4 +70,9 @@ public class CursoController {
         model.addAttribute("cursos", cursoService.buscarPorCategoria(categoria));
         return "cursoslist";
     }
+    @GetMapping("/cursos/activar/{id}")
+    public String activar(@PathVariable Long id) throws NotFoundException {
+        cursoService.activar(id);
+        return "redirect:/cursos/list";
+    }
 }
